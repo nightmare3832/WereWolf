@@ -1,13 +1,17 @@
 package sote;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.Listener;
 import cn.nukkit.plugin.PluginBase;
 import sote.Jobs.Job;
-import sote.commands.Command_SendPacket;
+import sote.Jobs.Job_Villager;
+import sote.Jobs.Job_WereWolf;
 
 public class Main extends PluginBase implements Listener{
 
@@ -21,7 +25,7 @@ public class Main extends PluginBase implements Listener{
     }
 
     public void registerCommands(){
-        getServer().getCommandMap().register("packet",new Command_SendPacket(this));
+        //getServer().getCommandMap().register("packet",new Command_SendPacket(this));
     }
 
     public static Boolean Join(Player player){
@@ -31,6 +35,69 @@ public class Main extends PluginBase implements Listener{
             }
         }
         return false;
+    }
+
+    public static void Start(){
+        if(isLife.size() < 3) return;
+        String[] jobslist = jobs.split(",");
+        if(jobslist.length != isLife.size()) return;
+        Integer[] joblist = new Integer[]{};
+        for(int i = 0;i <= jobslist.length;i++){
+            joblist[i] = Integer.parseInt(jobslist[i]);
+        }
+        List<Integer> list=Arrays.asList(joblist);
+        Collections.shuffle(list);
+        joblist =(Integer[])list.toArray(new Integer[list.size()]);
+        int count = 0;
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            jobBefore.put(e.getKey(),getJobByNumber(joblist[count]));
+            count++;
+        }
+        checkMember();
+        Night();
+    }
+
+    public static Job getJobByNumber(int type){
+        switch(type){
+            case 0:
+                return new Job_Villager();
+            case 1:
+                return new Job_WereWolf();
+            default:
+                return new Job_Villager();
+        }
+    }
+
+    public static void Night(){
+        
+    }
+
+    public static void finishNight(){
+        Player WolfTarget = null;
+        Player GuardTarget = null;
+        Player DivinerTarget = null;
+        HashMap<Player,Integer> death = new HashMap<Player,Integer>();
+        Job job;
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            if(e.getValue()){
+                job = jobAfter.get(e.getKey());
+                switch(job.getNumber()){
+                    case 1:
+                        WolfTarget = job.getWereWolfTarget();
+                    break;
+                }
+            }
+        }
+        death.put(WolfTarget,1);
+        Death(death);
+    }
+
+    //Death Reason
+    // 0 突然死   1 人狼にかまれる   2 ....
+    public static void Death(HashMap<Player,Integer> death){
+        for(Map.Entry<Player,Integer> e : death.entrySet()){
+            isLife.put(e.getKey(),false);
+        }
     }
 
     public static void checkMember(){
@@ -76,6 +143,7 @@ public class Main extends PluginBase implements Listener{
         }
     }
 
+    public static String jobs = "0,0,1";
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
     // 0 Villager (村人)                    1 WereWolf (人狼)                    2 Diviner (予言者)
@@ -106,6 +174,10 @@ public class Main extends PluginBase implements Listener{
     // 75 Hoodlum (ならず者)               76 Stalker (ストーカー)              77 Copier (コピー)
     // 78 Doppleganger (ドッペルゲンガー)
     public static HashMap<Player,Boolean> isLife = new HashMap<Player,Boolean>();
-    public static Integer TimeType = 0;// 0 NotGameNow // 10 Night // 11 Meeting // 12 Voting
+    public static Integer TimeType = 0;
+    // 0 NotGameNow
+    //10 FirstNight   11 SecondsNight   12 Night
+    //20 FirstMeeting   21 SecondsMeeting   22 Meeting
+    //30 Voting
 
 }
