@@ -18,6 +18,7 @@ import cn.nukkit.plugin.PluginBase;
 import sote.Jobs.Job;
 import sote.Jobs.Job_Villager;
 import sote.Jobs.Job_WereWolf;
+import sote.commands.Command_Werewolf;
 
 public class Main extends PluginBase implements Listener{
 
@@ -31,7 +32,7 @@ public class Main extends PluginBase implements Listener{
     }
 
     public void registerCommands(){
-        //getServer().getCommandMap().register("packet",new Command_SendPacket(this));
+        getServer().getCommandMap().register("werewolf",new Command_Werewolf(this));
     }
 
     @EventHandler
