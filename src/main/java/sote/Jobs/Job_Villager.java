@@ -6,6 +6,10 @@ public class Job_Villager extends Job{
     }
 
     @Override
+    public void Night(){
+    }
+
+    @Override
     public int getSide(){
         return 0;
     }

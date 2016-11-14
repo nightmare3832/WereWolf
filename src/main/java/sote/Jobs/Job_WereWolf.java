@@ -1,8 +1,19 @@
 package sote.Jobs;
 
+import cn.nukkit.Player;
+
 public class Job_WereWolf extends Job{
 
     public Job_WereWolf(){
+    }
+
+    @Override
+    public void Night(){
+    }
+
+    @Override
+    public void setTarget(Player player){
+        WereWolfTarget = player;
     }
 
     @Override

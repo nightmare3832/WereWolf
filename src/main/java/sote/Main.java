@@ -7,7 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
+import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
+import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.player.PlayerJoinEvent;
+import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.plugin.PluginBase;
 import sote.Jobs.Job;
 import sote.Jobs.Job_Villager;
@@ -28,13 +34,49 @@ public class Main extends PluginBase implements Listener{
         //getServer().getCommandMap().register("packet",new Command_SendPacket(this));
     }
 
+    @EventHandler
+    public static void onJoin(PlayerJoinEvent event){
+        Join(event.getPlayer());
+    }
+
+    @EventHandler
+    public static void onQuit(PlayerQuitEvent event){
+        Quit(event.getPlayer());
+    }
+
+    @EventHandler
+    public static void onAttack(EntityDamageEvent event){
+        Entity entity = event.getEntity();
+        if(event instanceof EntityDamageByEntityEvent){
+            EntityDamageByEntityEvent ev = (EntityDamageByEntityEvent) event;
+            Entity d = ev.getDamager();
+            if(entity instanceof Player && d instanceof Player){
+                Player player = (Player) entity;
+                Player damager = (Player) d;
+                if(jobAfter.containsKey(damager) && jobAfter.containsKey(player)){
+                    if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
+                        if(jobAfter.get(player).getNumber() != 1){
+                            jobAfter.get(damager).setTarget(player);
+                        }else{
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public static Boolean Join(Player player){
         if(TimeType == 0){
             if(!isLife.containsKey(player)){
-                
+                isLife.put(player, true);
+                return true;
             }
         }
         return false;
+    }
+
+    public static void Quit(Player player){
+        
     }
 
     public static void Start(){
@@ -157,6 +199,7 @@ public class Main extends PluginBase implements Listener{
         }
     }
 
+    public static final int WereWolfItem = 268;
     public static String jobs = "0,0,1";
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();

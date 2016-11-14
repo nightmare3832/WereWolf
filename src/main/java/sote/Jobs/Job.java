@@ -16,7 +16,9 @@ public abstract class Job{
     }
 
     public void Night(){
-        
+    }
+
+    public void setTarget(Player player){
     }
 
     public Player getWereWolfTarget(){
