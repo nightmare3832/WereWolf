@@ -53,6 +53,7 @@ public class Main extends PluginBase implements Listener{
             jobBefore.put(e.getKey(),getJobByNumber(joblist[count]));
             count++;
         }
+        TimeType = 10;
         checkMember();
         Night();
     }
@@ -69,7 +70,11 @@ public class Main extends PluginBase implements Listener{
     }
 
     public static void Night(){
-        
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            if(e.getValue()){
+                jobAfter.get(e.getKey()).Night();
+            }
+        }
     }
 
     public static void finishNight(){
@@ -135,10 +140,19 @@ public class Main extends PluginBase implements Listener{
     public static void Win(int side){
         switch(side){
             case 0:
+                for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                    e.getKey().sendMessage("村の勝ち");
+                }
             break;
             case 1:
+                for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                    e.getKey().sendMessage("人狼の勝ち");
+                }
             break;
             case 2:
+                for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                    e.getKey().sendMessage("狐の勝ち");
+                }
             break;
         }
     }
