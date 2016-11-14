@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import cn.nukkit.Player;
+import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
@@ -15,6 +16,7 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
 import sote.Jobs.Job_Villager;
 import sote.Jobs.Job_WereWolf;
@@ -113,11 +115,13 @@ public class Main extends PluginBase implements Listener{
     }
 
     public static void Night(){
+        checkMember();
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
             if(e.getValue()){
                 jobAfter.get(e.getKey()).Night();
             }
         }
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackNight(),1200);
     }
 
     public static void finishNight(){
@@ -238,4 +242,13 @@ public class Main extends PluginBase implements Listener{
     //20 FirstMeeting   21 SecondsMeeting   22 Meeting
     //30 Voting
 
+}
+class CallbackNight extends Task{
+
+    public CallbackNight(){
+    }
+
+    public void onRun(int d){
+        Main.finishNight();
+    }
 }
