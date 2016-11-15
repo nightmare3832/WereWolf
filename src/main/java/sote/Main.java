@@ -17,6 +17,7 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.player.PlayerChatEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.plugin.PluginBase;
@@ -57,6 +58,31 @@ public class Main extends PluginBase implements Listener{
     @EventHandler
     public static void onQuit(PlayerQuitEvent event){
         Quit(event.getPlayer());
+    }
+
+    @EventHandler
+    public static void onChat(PlayerChatEvent event){
+        Player player = event.getPlayer();
+        if(TimeType != 0){
+            if(isLife.containsKey(player)){
+                if(isLife.get(player)){
+                    if(TimeType == 10 || TimeType == 11 || TimeType == 12){
+                        event.setCancelled();
+                        if(jobAfter.get(player).getTalkRoom() != 0){
+                            for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                                if(e.getValue()){
+                                    if(jobAfter.get(e.getKey()).getTalkRoom() == jobAfter.get(player).getTalkRoom()){
+                                        e.getKey().sendMessage("["+jobAfter.get(player).getName()+"]"+player.getName()+" :"+event.getMessage());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    event.setCancelled();
+                }
+            }
+        }
     }
 
     @EventHandler
