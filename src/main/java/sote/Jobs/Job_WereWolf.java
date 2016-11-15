@@ -1,14 +1,17 @@
 package sote.Jobs;
 
 import cn.nukkit.Player;
+import cn.nukkit.item.Item;
 
 public class Job_WereWolf extends Job{
 
-    public Job_WereWolf(){
+    public Job_WereWolf(Player player){
+        this.owner = player;
     }
 
     @Override
     public void Night(){
+        this.owner.getInventory().addItem(new Item(268));
     }
 
     @Override

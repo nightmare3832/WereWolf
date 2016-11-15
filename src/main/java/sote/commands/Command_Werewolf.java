@@ -25,7 +25,6 @@ public class Command_Werewolf extends Command{
             case "join":
             break;
             case "start":
-                System.out.println("startcmd");
                 Main.jobs = args[1];
                 Main.Start();
             break;

@@ -57,8 +57,8 @@ public class Main extends PluginBase implements Listener{
     @EventHandler
     public static void onAttack(EntityDamageEvent event){
         Entity entity = event.getEntity();
+        event.setCancelled();
         if(event instanceof EntityDamageByEntityEvent){
-            event.setCancelled();
             EntityDamageByEntityEvent ev = (EntityDamageByEntityEvent) event;
             Entity d = ev.getDamager();
             if(entity instanceof Player && d instanceof Player){
@@ -72,12 +72,28 @@ public class Main extends PluginBase implements Listener{
                             }
                         }
                     }
+                    if(TimeType == 31){
+                        if(isLife.get(damager)){
+                            if(isLife.get(player)){
+                                DecisiveVote(damager,player);
+                            }
+                        }
+                    }
                     if(TimeType == 10 || TimeType == 11 || TimeType == 12){
                         if(isLife.get(damager)){
                             if(isLife.get(player)){
                                 if(jobAfter.get(player).getNumber() != 1){
-                                    if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
-                                        jobAfter.get(damager).setTarget(player);
+                                    if(jobAfter.get(damager).getNumber() == 1){
+                                        if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                            for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                                                if(e.getValue()){
+                                                    if(jobAfter.get(e.getKey()).getNumber() == 1){
+                                                        e.getKey().sendMessage(player.getName()+"を選択しました");
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }else{
                                 }
@@ -107,10 +123,8 @@ public class Main extends PluginBase implements Listener{
 
     public static void Start(){
         if(TimeType != 0) return;
-        System.out.println("start"+isLife.size());
         if(isLife.size() < 2) return;//3
         String[] jobslist = jobs.split(",");
-        System.out.println("start"+jobslist.length);
         //TODO Automatic correspondence of cast
         if(jobslist.length != isLife.size()) return;
         Integer[] joblist = new Integer[jobslist.length];
@@ -121,9 +135,11 @@ public class Main extends PluginBase implements Listener{
         Collections.shuffle(list);
         joblist =(Integer[])list.toArray(new Integer[list.size()]);
         int count = 0;
+        Job job;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
-            jobAfter.put(e.getKey(),getJobByNumber(joblist[count]));
-            jobBefore.put(e.getKey(),getJobByNumber(joblist[count]));
+            job = getJobByNumber(joblist[count],e.getKey());
+            jobAfter.put(e.getKey(),job);
+            jobBefore.put(e.getKey(),job);
             isVoted.put(e.getKey(),false);
             e.getKey().sendMessage(jobAfter.get(e.getKey()).getName());
             count++;
@@ -131,19 +147,20 @@ public class Main extends PluginBase implements Listener{
         TimeType = 10;
         checkMember();
         if(TimeType == 0) return;
+        SuddenDeath.clear();
         NightCount = 0;
         MeetingCount = 0;
         Night();
     }
 
-    public static Job getJobByNumber(int type){
+    public static Job getJobByNumber(int type,Player player){
         switch(type){
             case 0:
-                return new Job_Villager();
+                return new Job_Villager(player);
             case 1:
-                return new Job_WereWolf();
+                return new Job_WereWolf(player);
             default:
-                return new Job_Villager();
+                return new Job_Villager(player);
         }
     }
 
@@ -174,13 +191,14 @@ public class Main extends PluginBase implements Listener{
                         WolfTarget = job.getWereWolfTarget();
                     break;
                 }
+                e.getKey().getInventory().clearAll();
             }
-            e.getKey().sendMessage("夜終わり");
         }
         if(WolfTarget != null) death.put(WolfTarget,1);
-        for(Map.Entry<Player,Integer> e : SuddenDeath.entrySet()){
-            if(!death.containsKey(e.getKey())) death.put(e.getKey(),0);
+        for(Map.Entry<Player,Integer> ee : SuddenDeath.entrySet()){
+            if(!death.containsKey(ee.getKey())) death.put(ee.getKey(),0);
         }
+        SuddenDeath.clear();
         Death(death);
         Meeting();
     }
@@ -199,9 +217,6 @@ public class Main extends PluginBase implements Listener{
     }
 
     public static void finishMeeting(){
-        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
-            if(e.getKey() instanceof Player) e.getKey().sendMessage("朝おわり");
-        }
         startVote();
     }
 
@@ -227,10 +242,14 @@ public class Main extends PluginBase implements Listener{
 
     public static void finishVote(){
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
-            e.getKey().sendMessage("投票おわり");
+            e.getKey().sendMessage("投票を締め切りました");
         }
+        HashMap<Player,Integer> remove = new HashMap<Player,Integer>();
         for(Map.Entry<Player,Integer> e : VoteCount.entrySet()){
-            if(!isLife.get(e.getKey())) VoteCount.remove(e.getKey());
+            if(!isLife.get(e.getKey())) remove.put(e.getKey(),0);
+        }
+        for(Map.Entry<Player,Integer> e : remove.entrySet()){
+            VoteCount.remove(e.getKey());
         }
         List<Map.Entry<Player,Integer>> sort = Sort(VoteCount);
         int max = sort.get(0).getValue();
@@ -242,7 +261,7 @@ public class Main extends PluginBase implements Listener{
         }
         HashMap<Player,Integer> death = new HashMap<Player,Integer>();
         if(more.size() > 1){
-            DecisiveVote(more);
+            startDecisiveVote(more);
         }else{
             death.put(sort.get(0).getKey(),2);
             Death(death);
@@ -250,10 +269,58 @@ public class Main extends PluginBase implements Listener{
         }
     }
 
-    public static void DecisiveVote(HashMap<Player,Integer> entry){
-        //TODO
+    public static void startDecisiveVote(HashMap<Player,Integer> entry){
+        TimeType = 31;
+        DecisiveEntry = entry;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            if(e.getValue()){
+                VoteCount.put(e.getKey(),0);
+                isVoted.put(e.getKey(),false);
+            }
             e.getKey().sendMessage("決選投票");
+        }
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackDecisiveVote(),120);
+    }
+
+    public static void DecisiveVote(Player player,Player target){
+        if(isVoted.get(player)) return;
+        if(!DecisiveEntry.containsKey(target)) return;
+        int vote = 1;
+        VoteCount.put(target,VoteCount.get(target) + vote);
+        isVoted.put(player, true);
+        player.sendMessage(target.getName()+"に投票");
+    }
+
+    public static void finishDecisiveVote(){
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            e.getKey().sendMessage("投票を締め切りました");
+        }
+        HashMap<Player,Integer> remove = new HashMap<Player,Integer>();
+        for(Map.Entry<Player,Integer> e : VoteCount.entrySet()){
+            if(!DecisiveEntry.containsKey(e.getKey())) remove.put(e.getKey(),0);
+        }
+        for(Map.Entry<Player,Integer> e : remove.entrySet()){
+            VoteCount.remove(e.getKey());
+        }
+        List<Map.Entry<Player,Integer>> sort = Sort(VoteCount);
+        int max = sort.get(0).getValue();
+        HashMap<Player,Integer> more = new HashMap<Player,Integer>();
+        for(int i = 0;i < sort.size();i++){
+            if(sort.get(i).getValue() == max){
+                more.put(sort.get(i).getKey(),max);
+            }
+        }
+        HashMap<Player,Integer> death = new HashMap<Player,Integer>();
+        if(more.size() > 1){
+            int count = more.size();
+            int random = (int)(Math.random() * (count - 1));
+            death.put(sort.get(random).getKey(),2);
+            Death(death);
+            Night();
+        }else{
+            death.put(sort.get(0).getKey(),2);
+            Death(death);
+            Night();
         }
     }
 
@@ -407,13 +474,14 @@ public class Main extends PluginBase implements Listener{
     public static HashMap<Player,Integer> SuddenDeath = new HashMap<Player,Integer>();
     public static HashMap<Player,Boolean> isVoted = new HashMap<Player,Boolean>();
     public static HashMap<Player,Integer> VoteCount = new HashMap<Player,Integer>();
+    public static HashMap<Player,Integer> DecisiveEntry = new HashMap<Player,Integer>();
     public static Integer NightCount = 0;
     public static Integer MeetingCount = 0;
     public static Integer TimeType = 0;
-    // 0 NotGameNow
-    //10 FirstNight   11 SecondsNight   12 Night
-    //20 FirstMeeting   21 SecondsMeeting   22 Meeting
-    //30 Voting
+    //  0 NotGameNow
+    // 10 FirstNight   11 SecondsNight   12 Night
+    // 20 FirstMeeting   21 SecondsMeeting   22 Meeting
+    // 30 Voting   31 DecisiveVoting
 
 }
 class CallbackNight extends Task{
@@ -441,6 +509,15 @@ class CallbackVote extends Task{
 
     public void onRun(int d){
         Main.finishVote();
+    }
+}
+class CallbackDecisiveVote extends Task{
+
+    public CallbackDecisiveVote(){
+    }
+
+    public void onRun(int d){
+        Main.finishDecisiveVote();
     }
 }
 

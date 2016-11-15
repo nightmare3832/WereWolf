@@ -7,6 +7,10 @@ public abstract class Job{
     public Job(){
     }
 
+    public void setOwner(Player player){
+        this.owner = player;
+    }
+
     public int getSide(){
         return 0;// 0 村  1 狼  2 狐  3 ...
     }
@@ -38,5 +42,7 @@ public abstract class Job{
     }
 
     public static Player WereWolfTarget = null;
+    public Boolean used = false;
+    public Player owner = null;
 
 }

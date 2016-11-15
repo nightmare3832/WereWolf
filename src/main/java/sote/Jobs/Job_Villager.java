@@ -1,8 +1,11 @@
 package sote.Jobs;
 
+import cn.nukkit.Player;
+
 public class Job_Villager extends Job{
 
-    public Job_Villager(){
+    public Job_Villager(Player player){
+        this.owner = player;
     }
 
     @Override
