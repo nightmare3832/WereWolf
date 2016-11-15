@@ -286,7 +286,20 @@ public class Main extends PluginBase implements Listener{
         for(Map.Entry<Player,Integer> e : death.entrySet()){
             isLife.put(e.getKey(),false);
             for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
-                ee.getKey().sendMessage(e.getKey().getName()+"死亡");
+                switch(e.getValue()){
+                    case 0:
+                        ee.getKey().sendMessage(e.getKey().getName()+"が突然死しました");
+                    break;
+                    case 1:
+                        ee.getKey().sendMessage(e.getKey().getName()+"が無残な姿で発見されました");
+                    break;
+                    case 2:
+                        ee.getKey().sendMessage(e.getKey().getName()+"が投票によって処刑されました");
+                    break;
+                    default:
+                        ee.getKey().sendMessage(e.getKey().getName()+"が謎の死を遂げました");
+                    break;
+                }
             }
         }
     }
