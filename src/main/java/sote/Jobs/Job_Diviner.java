@@ -21,7 +21,8 @@ public class Job_Diviner extends Job{
     @Override
     public void setTarget(Player player){
         if(this.used) return;
-        result.put(player,Main.jobAfter.get(player).getDivinerResult());
+        this.DivinerTarget = player;
+        this.result.put(player,Main.jobAfter.get(player).getDivinerResult());
         this.owner.sendMessage(player.getName()+"は"+Main.jobAfter.get(player).getDivinerResult()+"です");
         this.used = true;
     }

@@ -209,15 +209,21 @@ public class Main extends PluginBase implements Listener{
                     case 2:
                         DivinerTarget = job.getDivinerTarget();
                     break;
+                    case 4:
+                        GuardTarget = job.getGuardTarget();
+                    break;
                 }
+                job.reset();
                 e.getKey().getInventory().clearAll();
             }
         }
-        if(WolfTarget != null) death.put(WolfTarget,1);
+        if(jobAfter.get(DivinerTarget).getNumber() == 62) death.put(DivinerTarget,3);
+        if(WolfTarget != null && !(WolfTarget.equals(GuardTarget))) death.put(WolfTarget,1);
         for(Map.Entry<Player,Integer> ee : SuddenDeath.entrySet()){
             if(!death.containsKey(ee.getKey())) death.put(ee.getKey(),0);
         }
         SuddenDeath.clear();
+        Job.reset2();
         Death(death);
         Meeting();
     }
@@ -361,7 +367,7 @@ public class Main extends PluginBase implements Listener{
     }
 
     //Death Reason
-    // 0 突然死   1 人狼にかまれる   2 投票   3 ....
+    // 0 突然死   1 人狼にかまれる   2 投票   3 呪殺   4 ....
     public static void Death(HashMap<Player,Integer> death){
         if(death.size() == 0){
             for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
@@ -461,6 +467,7 @@ public class Main extends PluginBase implements Listener{
     public static final int WereWolfItem = 268;
     public static final int DivinerItem = 340;
     public static final int PsychicItem = 340;
+    public static final int GuardItem = 272;
     public static String jobs = "0,0,1";
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();

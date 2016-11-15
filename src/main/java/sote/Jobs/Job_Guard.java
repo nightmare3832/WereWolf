@@ -4,15 +4,15 @@ import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import sote.Main;
 
-public class Job_Psychic extends Job{
+public class Job_Guard extends Job{
 
-    public Job_Psychic(Player player){
+    public Job_Guard(Player player){
         this.owner = player;
     }
 
     @Override
     public void Night(){
-        Item item = new Item(Main.PsychicItem);
+        Item item = new Item(Main.GuardItem);
         this.owner.getInventory().setHotbarSlotIndex(0,0);
         this.owner.getInventory().setItem(0,item);
         this.owner.getInventory().sendContents(this.owner);
@@ -21,8 +21,8 @@ public class Job_Psychic extends Job{
     @Override
     public void setTarget(Player player){
         if(this.used) return;
-        this.result.put(player,Main.jobAfter.get(player).getPsychicResult());
-        this.owner.sendMessage(player.getName()+"は"+Main.jobAfter.get(player).getPsychicResult()+"です");
+        this.GuardTarget = player;
+        this.owner.sendMessage(player.getName()+"を選択しました");
         this.used = true;
     }
 

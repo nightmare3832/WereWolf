@@ -35,6 +35,10 @@ public abstract class Job{
         return DivinerTarget;
     }
 
+    public Player getGuardTarget(){
+        return GuardTarget;
+    }
+
     public int getNumber(){
         return 0;
     }
@@ -51,12 +55,19 @@ public abstract class Job{
         return "村人";
     }
 
-    public static void reset(){
+    public void reset(){
+        this.DivinerTarget = null;
+        this.GuardTarget = null;
+        this.used = false;
+    }
+
+    public static void reset2(){
         WereWolfTarget = null;
     }
 
     public static Player WereWolfTarget = null;
     public Player DivinerTarget = null;
+    public Player GuardTarget = null;
     public Boolean used = false;
     public HashMap<Player,String> result = new HashMap<Player,String>();
     public Player owner = null;
