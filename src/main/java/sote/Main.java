@@ -20,6 +20,8 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerChatEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
+import cn.nukkit.level.Location;
+import cn.nukkit.math.Vector3;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
@@ -40,6 +42,7 @@ public class Main extends PluginBase implements Listener{
     public void onEnable(){
         registerCommands();
         getServer().getPluginManager().registerEvents(this, this);
+        Center = new Vector3(128,5,128);
         super.onEnable();
     }
 
@@ -194,6 +197,7 @@ public class Main extends PluginBase implements Listener{
         SuddenDeath.clear();
         NightCount = 0;
         MeetingCount = 0;
+        tpCenter();
         Night();
     }
 
@@ -255,13 +259,14 @@ public class Main extends PluginBase implements Listener{
                 e.getKey().getInventory().clearAll();
             }
         }
-        if(jobAfter.get(DivinerTarget).getNumber() == 62) death.put(DivinerTarget,3);
+        if(DivinerTarget != null && jobAfter.get(DivinerTarget).getNumber() == 62) death.put(DivinerTarget,3);
         if(WolfTarget != null && !(WolfTarget.equals(GuardTarget))) death.put(WolfTarget,1);
         for(Map.Entry<Player,Integer> ee : SuddenDeath.entrySet()){
             if(!death.containsKey(ee.getKey())) death.put(ee.getKey(),0);
         }
         SuddenDeath.clear();
         Job.reset2();
+        tpCenter();
         Death(death);
         Meeting();
     }
@@ -472,7 +477,7 @@ public class Main extends PluginBase implements Listener{
                 Win(2);
             }
         }else{
-            if(Wolf >= Village){
+            if(Wolf > Village){//=
                 Win(1);
             }
         }
@@ -499,6 +504,65 @@ public class Main extends PluginBase implements Listener{
         reset();
     }
 
+    public static void tpCenter(){
+        int dv = isLife.size();
+        double x0 = Center.x;
+        double z0 = Center.z;
+        double x1;
+        double z1;
+        double rabius = 8;
+        int i = 0;
+        double mx;
+        double mz;
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            x1 = x0 + rabius * Math.sin(2 * Math.PI * i / dv);
+            z1 = z0 + rabius * Math.cos(2 * Math.PI * i / dv);
+            System.out.println(x1+":"+z1);
+            mx = Center.x - x1;
+            mz = Center.z - z1;
+            double yaw = getYaw(mx,mz);
+            pos.put(e.getKey(),new Location(x1,Center.y,z1,yaw,0,Server.getInstance().getDefaultLevel()));
+            e.getKey().teleport(new Location(x1,Center.y,z1,yaw,0,Server.getInstance().getDefaultLevel()));
+            i++;
+        }
+    }
+
+    public static double getYaw(double mx,double mz) {
+        double yaw = 0;
+        if (mz == 0) {
+            if (mx < 0) {
+                yaw = -90;
+            }else {
+                yaw = 90;
+            }
+        }else {
+            if (mx >= 0 && mz > 0) {
+                double atan = Math.atan(mx/mz);
+                yaw = rad2deg(atan);
+            }else if (mx >= 0 && mz < 0) {
+                double atan = Math.atan(mx/Math.abs(mz));
+                yaw = 180 - rad2deg(atan);
+            }else if (mx < 0 && mz < 0) {
+                double atan = Math.atan(mx/mz);
+                yaw = -(180 - rad2deg(atan));
+            }else if (mx < 0 && mz > 0) {
+                double atan = Math.atan(Math.abs(mx)/mz);
+                yaw = -(rad2deg(atan));
+            }
+        }
+
+        yaw = - yaw;
+        return yaw;
+    }
+
+    public static double rad2deg(double radian) {
+        return radian * (180f / Math.PI);
+    }
+
+    public static double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
     public static void reset(){
         jobAfter = new HashMap<Player,Job>();
         jobBefore = new HashMap<Player,Job>();
@@ -518,6 +582,7 @@ public class Main extends PluginBase implements Listener{
     public static final int DivinerItem = 340;
     public static final int PsychicItem = 340;
     public static final int GuardItem = 272;
+    public static Vector3 Center;
     public static String jobs = "0,0,1";
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
@@ -548,6 +613,7 @@ public class Main extends PluginBase implements Listener{
     // 72 CultLeader (カルトリーダー)      73 Tanner (皮なめし職人)             74 Bat (こうもり)
     // 75 Hoodlum (ならず者)               76 Stalker (ストーカー)              77 Copier (コピー)
     // 78 Doppleganger (ドッペルゲンガー)
+    public static HashMap<Player,Location> pos = new HashMap<Player,Location>();
     public static HashMap<Player,Boolean> isLife = new HashMap<Player,Boolean>();
     public static HashMap<Player,Integer> SuddenDeath = new HashMap<Player,Integer>();
     public static HashMap<Player,Boolean> isVoted = new HashMap<Player,Boolean>();

@@ -24,6 +24,9 @@ public abstract class Job{
     public void Night(){
     }
 
+    public void finishNight(){
+    }
+
     public void setTarget(Player player){
     }
 

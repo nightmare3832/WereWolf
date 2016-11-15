@@ -1,5 +1,5 @@
 name: WereWolf
 main: sote.Main
-version: 1.0
+version: "1.0"
 author: nightmare3832
 api: ["1.0.0"]
