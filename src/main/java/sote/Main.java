@@ -1,10 +1,14 @@
 package sote;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
@@ -39,7 +43,10 @@ public class Main extends PluginBase implements Listener{
 
     @EventHandler
     public static void onJoin(PlayerJoinEvent event){
-        Join(event.getPlayer());
+        Player player = event.getPlayer();
+        player.setFoodEnabled(false);
+        player.getFoodData().sendFoodLevel(20);
+        Join(player);
     }
 
     @EventHandler
@@ -51,16 +58,30 @@ public class Main extends PluginBase implements Listener{
     public static void onAttack(EntityDamageEvent event){
         Entity entity = event.getEntity();
         if(event instanceof EntityDamageByEntityEvent){
+            event.setCancelled();
             EntityDamageByEntityEvent ev = (EntityDamageByEntityEvent) event;
             Entity d = ev.getDamager();
             if(entity instanceof Player && d instanceof Player){
                 Player player = (Player) entity;
                 Player damager = (Player) d;
                 if(jobAfter.containsKey(damager) && jobAfter.containsKey(player)){
-                    if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
-                        if(jobAfter.get(player).getNumber() != 1){
-                            jobAfter.get(damager).setTarget(player);
-                        }else{
+                    if(TimeType == 30){
+                        if(isLife.get(damager)){
+                            if(isLife.get(player)){
+                                Vote(damager,player);
+                            }
+                        }
+                    }
+                    if(TimeType == 10 || TimeType == 11 || TimeType == 12){
+                        if(isLife.get(damager)){
+                            if(isLife.get(player)){
+                                if(jobAfter.get(player).getNumber() != 1){
+                                    if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
+                                        jobAfter.get(damager).setTarget(player);
+                                    }
+                                }else{
+                                }
+                            }
                         }
                     }
                 }
@@ -72,6 +93,7 @@ public class Main extends PluginBase implements Listener{
         if(TimeType == 0){
             if(!isLife.containsKey(player)){
                 isLife.put(player, true);
+                player.sendMessage("人狼ゲームに参加しました");
                 return true;
             }
         }
@@ -79,15 +101,20 @@ public class Main extends PluginBase implements Listener{
     }
 
     public static void Quit(Player player){
-        
+        if(TimeType == 0) isLife.remove(player);
+        SuddenDeath.put(player,0);
     }
 
     public static void Start(){
-        if(isLife.size() < 3) return;
+        if(TimeType != 0) return;
+        System.out.println("start"+isLife.size());
+        if(isLife.size() < 2) return;//3
         String[] jobslist = jobs.split(",");
+        System.out.println("start"+jobslist.length);
+        //TODO Automatic correspondence of cast
         if(jobslist.length != isLife.size()) return;
-        Integer[] joblist = new Integer[]{};
-        for(int i = 0;i <= jobslist.length;i++){
+        Integer[] joblist = new Integer[jobslist.length];
+        for(int i = 0;i < jobslist.length;i++){
             joblist[i] = Integer.parseInt(jobslist[i]);
         }
         List<Integer> list=Arrays.asList(joblist);
@@ -95,11 +122,17 @@ public class Main extends PluginBase implements Listener{
         joblist =(Integer[])list.toArray(new Integer[list.size()]);
         int count = 0;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            jobAfter.put(e.getKey(),getJobByNumber(joblist[count]));
             jobBefore.put(e.getKey(),getJobByNumber(joblist[count]));
+            isVoted.put(e.getKey(),false);
+            e.getKey().sendMessage(jobAfter.get(e.getKey()).getName());
             count++;
         }
         TimeType = 10;
         checkMember();
+        if(TimeType == 0) return;
+        NightCount = 0;
+        MeetingCount = 0;
         Night();
     }
 
@@ -115,13 +148,16 @@ public class Main extends PluginBase implements Listener{
     }
 
     public static void Night(){
+        NightCount++;
         checkMember();
+        if(TimeType == 0) return;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
             if(e.getValue()){
                 jobAfter.get(e.getKey()).Night();
             }
+            e.getKey().sendMessage("恐ろしい夜");
         }
-        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackNight(),1200);
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackNight(),120);
     }
 
     public static void finishNight(){
@@ -139,16 +175,119 @@ public class Main extends PluginBase implements Listener{
                     break;
                 }
             }
+            e.getKey().sendMessage("夜終わり");
         }
-        death.put(WolfTarget,1);
+        if(WolfTarget != null) death.put(WolfTarget,1);
+        for(Map.Entry<Player,Integer> e : SuddenDeath.entrySet()){
+            if(!death.containsKey(e.getKey())) death.put(e.getKey(),0);
+        }
         Death(death);
+        Meeting();
+    }
+
+    public static void Meeting(){
+        MeetingCount++;
+        TimeType = 22;
+        if(MeetingCount == 1) TimeType = 20;
+        else if(MeetingCount == 2) TimeType = 21;
+        checkMember();
+        if(TimeType == 0) return;
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            if(e.getKey() instanceof Player) e.getKey().sendMessage("朝");
+        }
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackMeeting(),60);
+    }
+
+    public static void finishMeeting(){
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            if(e.getKey() instanceof Player) e.getKey().sendMessage("朝おわり");
+        }
+        startVote();
+    }
+
+    public static void startVote(){
+        TimeType = 30;
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            if(e.getValue()){
+                VoteCount.put(e.getKey(),0);
+                isVoted.put(e.getKey(),false);
+            }
+            e.getKey().sendMessage("投票開始");
+        }
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackVote(),120);
+    }
+
+    public static void Vote(Player player,Player target){
+        if(isVoted.get(player)) return;
+        int vote = 1;
+        VoteCount.put(target,VoteCount.get(target) + vote);
+        isVoted.put(player, true);
+        player.sendMessage(target.getName()+"に投票");
+    }
+
+    public static void finishVote(){
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            e.getKey().sendMessage("投票おわり");
+        }
+        for(Map.Entry<Player,Integer> e : VoteCount.entrySet()){
+            if(!isLife.get(e.getKey())) VoteCount.remove(e.getKey());
+        }
+        List<Map.Entry<Player,Integer>> sort = Sort(VoteCount);
+        int max = sort.get(0).getValue();
+        HashMap<Player,Integer> more = new HashMap<Player,Integer>();
+        for(int i = 0;i < sort.size();i++){
+            if(sort.get(i).getValue() == max){
+                more.put(sort.get(i).getKey(),max);
+            }
+        }
+        HashMap<Player,Integer> death = new HashMap<Player,Integer>();
+        if(more.size() > 1){
+            DecisiveVote(more);
+        }else{
+            death.put(sort.get(0).getKey(),2);
+            Death(death);
+            Night();
+        }
+    }
+
+    public static void DecisiveVote(HashMap<Player,Integer> entry){
+        //TODO
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            e.getKey().sendMessage("決選投票");
+        }
+    }
+
+    public static List Sort(Map<Player,Integer> map){
+        Map<Player, Integer> hashMap = new HashMap<Player, Integer>();
+        for (Map.Entry<Player,Integer> e : map.entrySet()){
+            hashMap.put(e.getKey(),e.getValue());
+        }
+        List<Map.Entry<Player,Integer>> entries =
+              new ArrayList<Map.Entry<Player,Integer>>(hashMap.entrySet());
+        Collections.sort(entries, new Comparator<Map.Entry<Player,Integer>>() {
+            @Override
+            public int compare(
+                  Entry<Player,Integer> entry1, Entry<Player,Integer> entry2) {
+                return ((Integer)entry2.getValue()).compareTo((Integer)entry1.getValue());
+            }
+        });
+        return entries;
     }
 
     //Death Reason
-    // 0 突然死   1 人狼にかまれる   2 ....
+    // 0 突然死   1 人狼にかまれる   2 投票   3 ....
     public static void Death(HashMap<Player,Integer> death){
+        if(death.size() == 0){
+            for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
+                ee.getKey().sendMessage("死亡なし");
+            }
+            return;
+        }
         for(Map.Entry<Player,Integer> e : death.entrySet()){
             isLife.put(e.getKey(),false);
+            for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
+                ee.getKey().sendMessage(e.getKey().getName()+"死亡");
+            }
         }
     }
 
@@ -202,6 +341,22 @@ public class Main extends PluginBase implements Listener{
                 }
             break;
         }
+        reset();
+    }
+
+    public static void reset(){
+        jobAfter = new HashMap<Player,Job>();
+        jobBefore = new HashMap<Player,Job>();
+        SuddenDeath = new HashMap<Player,Integer>();
+        isLife = new HashMap<Player,Boolean>();
+        isVoted = new HashMap<Player,Boolean>();
+        VoteCount = new HashMap<Player,Integer>();
+        NightCount = 0;
+        MeetingCount = 0;
+        TimeType = 0;
+        for(Map.Entry<UUID,Player> e : Server.getInstance().getOnlinePlayers().entrySet()){
+            Join(e.getValue());
+        }
     }
 
     public static final int WereWolfItem = 268;
@@ -236,6 +391,11 @@ public class Main extends PluginBase implements Listener{
     // 75 Hoodlum (ならず者)               76 Stalker (ストーカー)              77 Copier (コピー)
     // 78 Doppleganger (ドッペルゲンガー)
     public static HashMap<Player,Boolean> isLife = new HashMap<Player,Boolean>();
+    public static HashMap<Player,Integer> SuddenDeath = new HashMap<Player,Integer>();
+    public static HashMap<Player,Boolean> isVoted = new HashMap<Player,Boolean>();
+    public static HashMap<Player,Integer> VoteCount = new HashMap<Player,Integer>();
+    public static Integer NightCount = 0;
+    public static Integer MeetingCount = 0;
     public static Integer TimeType = 0;
     // 0 NotGameNow
     //10 FirstNight   11 SecondsNight   12 Night
@@ -252,3 +412,22 @@ class CallbackNight extends Task{
         Main.finishNight();
     }
 }
+class CallbackMeeting extends Task{
+
+    public CallbackMeeting(){
+    }
+
+    public void onRun(int d){
+        Main.finishMeeting();
+    }
+}
+class CallbackVote extends Task{
+
+    public CallbackVote(){
+    }
+
+    public void onRun(int d){
+        Main.finishVote();
+    }
+}
+
