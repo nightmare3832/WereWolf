@@ -1,5 +1,7 @@
 package sote.Jobs;
 
+import java.util.HashMap;
+
 import cn.nukkit.Player;
 
 public abstract class Job{
@@ -29,12 +31,20 @@ public abstract class Job{
         return WereWolfTarget;
     }
 
+    public Player getDivinerTarget(){
+        return DivinerTarget;
+    }
+
     public int getNumber(){
         return 0;
     }
 
+    public String getDivinerResult(){
+        return "人間";
+    }
+
     public String getName(){
-        return "";
+        return "村人";
     }
 
     public static void reset(){
@@ -42,7 +52,9 @@ public abstract class Job{
     }
 
     public static Player WereWolfTarget = null;
+    public Player DivinerTarget = null;
     public Boolean used = false;
+    public HashMap<Player,String> result = new HashMap<Player,String>();
     public Player owner = null;
 
 }

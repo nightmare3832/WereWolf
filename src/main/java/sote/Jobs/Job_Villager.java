@@ -13,6 +13,10 @@ public class Job_Villager extends Job{
     }
 
     @Override
+    public void setTarget(Player player){
+    }
+
+    @Override
     public int getSide(){
         return 0;
     }
@@ -25,6 +29,11 @@ public class Job_Villager extends Job{
     @Override
     public int getNumber(){
         return 0;
+    }
+
+    @Override
+    public String getDivinerResult(){
+        return "人間";
     }
 
     @Override

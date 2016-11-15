@@ -22,6 +22,7 @@ import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
+import sote.Jobs.Job_Diviner;
 import sote.Jobs.Job_Villager;
 import sote.Jobs.Job_WereWolf;
 import sote.commands.Command_Werewolf;
@@ -82,8 +83,8 @@ public class Main extends PluginBase implements Listener{
                     if(TimeType == 10 || TimeType == 11 || TimeType == 12){
                         if(isLife.get(damager)){
                             if(isLife.get(player)){
-                                if(jobAfter.get(player).getNumber() != 1){
-                                    if(jobAfter.get(damager).getNumber() == 1){
+                                if(jobAfter.get(damager).getNumber() == 1){
+                                    if(jobAfter.get(player).getNumber() != 1){
                                         if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
                                             jobAfter.get(damager).setTarget(player);
                                             for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
@@ -95,7 +96,12 @@ public class Main extends PluginBase implements Listener{
                                             }
                                         }
                                     }
-                                }else{
+                                }else if(jobAfter.get(damager).getNumber() == 2){
+                                    if(!jobAfter.get(damager).result.containsKey(player)){
+                                        if(damager.getInventory().getItemInHand().getId() == DivinerItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -159,6 +165,8 @@ public class Main extends PluginBase implements Listener{
                 return new Job_Villager(player);
             case 1:
                 return new Job_WereWolf(player);
+            case 2:
+                return new Job_Diviner(player);
             default:
                 return new Job_Villager(player);
         }
@@ -189,6 +197,9 @@ public class Main extends PluginBase implements Listener{
                 switch(job.getNumber()){
                     case 1:
                         WolfTarget = job.getWereWolfTarget();
+                    break;
+                    case 2:
+                        DivinerTarget = job.getDivinerTarget();
                     break;
                 }
                 e.getKey().getInventory().clearAll();
@@ -440,6 +451,7 @@ public class Main extends PluginBase implements Listener{
     }
 
     public static final int WereWolfItem = 268;
+    public static final int DivinerItem = 340;
     public static String jobs = "0,0,1";
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
