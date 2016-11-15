@@ -408,15 +408,27 @@ public class Main extends PluginBase implements Listener{
         int Fox = 0;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
             if(e.getValue()){
-                switch(jobAfter.get(e.getKey()).getSide()){
-                    case 0:
-                        Village++;
-                    break;
+                switch(jobAfter.get(e.getKey()).getNumber()){
                     case 1:
+                    case 43:
+                    case 44:
+                    case 45:
+                    case 46:
+                    case 47:
+                    case 48:
+                    case 49:
+                    case 50:
+                    case 51:
+                    case 52:
+                    case 53:
                         Wolf++;
                     break;
-                    case 2:
+                    case 62:
+                    case 63:
                         Fox++;
+                    break;
+                    default:
+                        Village++;
                     break;
                 }
             }
@@ -428,7 +440,7 @@ public class Main extends PluginBase implements Listener{
                 Win(2);
             }
         }else{
-            if(Wolf > Village){
+            if(Wolf >= Village){
                 Win(1);
             }
         }
