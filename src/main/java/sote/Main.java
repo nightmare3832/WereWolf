@@ -493,6 +493,7 @@ public class Main extends PluginBase implements Listener{
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
     // 0 *Villager (村人)                   1 *WereWolf (人狼)                   2 *Diviner (予言者)
+    // 3 *Psychic (霊媒師)                  4 *Guard (騎士)                      5 *Madman (狂人)
     // 6 Couple (共有者)                    7 Fanatic (狂信者)                   8 Poisoner (埋毒者)
     // 9 Cat (猫又)                        10 ToughGuy (タフガイ)               11 Dog (犬)
     // 12 Noble (貴族)                     13 Slave (奴隷)                      14 Magician (魔術師)
