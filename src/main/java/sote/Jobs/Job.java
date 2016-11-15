@@ -43,6 +43,10 @@ public abstract class Job{
         return "人間";
     }
 
+    public String getPsychicResult(){
+        return "人間";
+    }
+
     public String getName(){
         return "村人";
     }

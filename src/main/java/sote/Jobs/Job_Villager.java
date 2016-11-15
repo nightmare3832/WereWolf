@@ -37,6 +37,11 @@ public class Job_Villager extends Job{
     }
 
     @Override
+    public String getPsychicResult(){
+        return "人間";
+    }
+
+    @Override
     public String getName(){
         return "村人";
     }

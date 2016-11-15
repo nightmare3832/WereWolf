@@ -15,6 +15,7 @@ public class Job_Diviner extends Job{
         Item item = new Item(Main.DivinerItem);
         this.owner.getInventory().setHotbarSlotIndex(0,0);
         this.owner.getInventory().setItem(0,item);
+        this.owner.getInventory().sendContents(this.owner);
     }
 
     @Override
@@ -42,6 +43,11 @@ public class Job_Diviner extends Job{
 
     @Override
     public String getDivinerResult(){
+        return "人間";
+    }
+
+    @Override
+    public String getPsychicResult(){
         return "人間";
     }
 

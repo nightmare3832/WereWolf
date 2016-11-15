@@ -103,6 +103,14 @@ public class Main extends PluginBase implements Listener{
                                         }
                                     }
                                 }
+                            }else{
+                                if(jobAfter.get(damager).getNumber() == 3){
+                                    if(!jobAfter.get(damager).result.containsKey(player)){
+                                        if(damager.getInventory().getItemInHand().getId() == PsychicItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -452,6 +460,7 @@ public class Main extends PluginBase implements Listener{
 
     public static final int WereWolfItem = 268;
     public static final int DivinerItem = 340;
+    public static final int PsychicItem = 340;
     public static String jobs = "0,0,1";
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
