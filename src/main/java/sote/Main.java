@@ -23,6 +23,8 @@ import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
 import sote.Jobs.Job_Diviner;
+import sote.Jobs.Job_Guard;
+import sote.Jobs.Job_Psychic;
 import sote.Jobs.Job_Villager;
 import sote.Jobs.Job_WereWolf;
 import sote.commands.Command_Werewolf;
@@ -175,6 +177,10 @@ public class Main extends PluginBase implements Listener{
                 return new Job_WereWolf(player);
             case 2:
                 return new Job_Diviner(player);
+            case 3:
+                return new Job_Psychic(player);
+            case 4:
+                return new Job_Guard(player);
             default:
                 return new Job_Villager(player);
         }
