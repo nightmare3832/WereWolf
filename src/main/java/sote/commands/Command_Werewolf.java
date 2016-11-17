@@ -23,7 +23,7 @@ public class Command_Werewolf extends Command{
         });
         this.commandParameters.put("start", new CommandParameter[]{
                 new CommandParameter("start", CommandParameter.ARG_TYPE_STRING, false),
-                new CommandParameter("jobs", CommandParameter.ARG_TYPE_RAW_TEXT, false)
+                new CommandParameter("cast", CommandParameter.ARG_TYPE_RAW_TEXT, false)
         });
     }
 

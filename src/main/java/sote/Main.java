@@ -56,6 +56,23 @@ public class Main extends PluginBase implements Listener{
         registerCommands();
         getServer().getPluginManager().registerEvents(this, this);
         Center = new Vector3(128,4,128);
+        defaultCast.put(2,new Integer[]{1,0});
+        defaultCast.put(3,new Integer[]{1,0,0});
+        defaultCast.put(4,new Integer[]{1,2,0,0});
+        defaultCast.put(5,new Integer[]{1,2,4,0,0});
+        defaultCast.put(6,new Integer[]{1,2,4,0,0,0});
+        defaultCast.put(7,new Integer[]{1,2,4,3,5,0,0});
+        defaultCast.put(8,new Integer[]{1,1,2,4,3,0,0,0});
+        defaultCast.put(9,new Integer[]{1,1,2,4,3,5,0,0,0});
+        defaultCast.put(10,new Integer[]{1,1,2,4,42,3,5,0,0,0});
+        defaultCast.put(11,new Integer[]{1,1,2,4,42,3,5,5,0,0,0});
+        defaultCast.put(12,new Integer[]{1,1,2,4,42,3,5,7,0,0,0,0});
+        defaultCast.put(13,new Integer[]{1,1,2,4,42,3,5,7,0,0,0,0,0});
+        defaultCast.put(14,new Integer[]{1,1,2,4,42,3,5,7,62,6,6,0,0,0});
+        defaultCast.put(15,new Integer[]{1,1,2,4,42,3,5,7,62,64,6,6,0,0,0});
+        defaultCast.put(16,new Integer[]{1,1,1,2,4,42,3,5,7,62,64,6,6,0,0,0});
+        defaultCast.put(17,new Integer[]{1,1,1,2,4,42,3,5,5,7,62,64,6,6,0,0,0});
+        defaultCast.put(18,new Integer[]{1,1,1,2,4,42,3,5,5,7,62,64,6,6,0,0,0,0});
         super.onEnable();
     }
 
@@ -174,70 +191,6 @@ public class Main extends PluginBase implements Listener{
         }
     }
 
-    /*@EventHandler
-    public static void onAttack(EntityDamageEvent event){
-        Entity entity = event.getEntity();
-        event.setCancelled();
-        if(event instanceof EntityDamageByEntityEvent){
-            EntityDamageByEntityEvent ev = (EntityDamageByEntityEvent) event;
-            Entity d = ev.getDamager();
-            if(entity instanceof Player && d instanceof Player){
-                Player player = (Player) entity;
-                Player damager = (Player) d;
-                if(jobAfter.containsKey(damager) && jobAfter.containsKey(player)){
-                    if(TimeType == 30){
-                        if(isLife.get(damager)){
-                            if(isLife.get(player)){
-                                Vote(damager,player);
-                            }
-                        }
-                    }
-                    if(TimeType == 31){
-                        if(isLife.get(damager)){
-                            if(isLife.get(player)){
-                                DecisiveVote(damager,player);
-                            }
-                        }
-                    }
-                    if(TimeType == 10 || TimeType == 11 || TimeType == 12){
-                        if(isLife.get(damager)){
-                            if(isLife.get(player)){
-                                if(jobAfter.get(damager).getNumber() == 1){
-                                    if(jobAfter.get(player).getNumber() != 1){
-                                        if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
-                                            jobAfter.get(damager).setTarget(player);
-                                            for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
-                                                if(e.getValue()){
-                                                    if(jobAfter.get(e.getKey()).getNumber() == 1){
-                                                        e.getKey().sendMessage(player.getName()+"を選択しました");
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }else if(jobAfter.get(damager).getNumber() == 2){
-                                    if(!jobAfter.get(damager).result.containsKey(player)){
-                                        if(damager.getInventory().getItemInHand().getId() == DivinerItem){
-                                            jobAfter.get(damager).setTarget(player);
-                                        }
-                                    }
-                                }
-                            }else{
-                                if(jobAfter.get(damager).getNumber() == 3){
-                                    if(!jobAfter.get(damager).result.containsKey(player)){
-                                        if(damager.getInventory().getItemInHand().getId() == PsychicItem){
-                                            jobAfter.get(damager).setTarget(player);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }*/
-
     public static Boolean Join(Player player){
         if(TimeType == 0){
             if(!isLife.containsKey(player)){
@@ -258,11 +211,13 @@ public class Main extends PluginBase implements Listener{
         if(TimeType != 0) return;
         if(isLife.size() < 2) return;//3
         String[] jobslist = jobs.split(",");
-        //TODO Automatic correspondence of cast
-        if(jobslist.length != isLife.size()) return;
         Integer[] joblist = new Integer[jobslist.length];
-        for(int i = 0;i < jobslist.length;i++){
-            joblist[i] = Integer.parseInt(jobslist[i]);
+        if(jobslist.length != isLife.size()){
+            joblist = defaultCast.get(isLife.size());//TODO
+        }else{
+            for(int i = 0;i < jobslist.length;i++){
+                joblist[i] = Integer.parseInt(jobslist[i]);
+            }
         }
         List<Integer> list=Arrays.asList(joblist);
         Collections.shuffle(list);
@@ -824,6 +779,7 @@ public class Main extends PluginBase implements Listener{
     public static final int GuardItem = 272;
     public static Vector3 Center;
     public static String jobs = "0,0,1";
+    public static HashMap<Integer,Integer[]> defaultCast = new HashMap<Integer,Integer[]>();
     public static HashMap<Player,Job> jobAfter = new HashMap<Player,Job>();
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
     // 0 *Villager (村人)                   1 *WereWolf (人狼)                   2 *Diviner (予言者)
