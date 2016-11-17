@@ -35,6 +35,7 @@ import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
 import sote.Jobs.Job_Couple;
 import sote.Jobs.Job_Diviner;
+import sote.Jobs.Job_Fanatic;
 import sote.Jobs.Job_Guard;
 import sote.Jobs.Job_Madman;
 import sote.Jobs.Job_Psychic;
@@ -299,6 +300,8 @@ public class Main extends PluginBase implements Listener{
                 return new Job_Madman(player);
             case 6:
                 return new Job_Couple(player);
+            case 7:
+                return new Job_Fanatic(player);
             default:
                 return new Job_Villager(player);
         }
