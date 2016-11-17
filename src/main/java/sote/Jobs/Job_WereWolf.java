@@ -1,5 +1,7 @@
 package sote.Jobs;
 
+import java.util.Map;
+
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import sote.Main;
@@ -12,6 +14,15 @@ public class Job_WereWolf extends Job{
 
     @Override
     public void Night(){
+        for(Map.Entry<Player,Boolean> e : Main.isLife.entrySet()){
+            if(!(e.getKey().equals(this.owner))){
+                if(Main.jobAfter.get(e.getKey()).getNumber() != 1){
+                    Main.switchNPC(this.owner,e.getKey());
+                }else{
+                    Main.switchPlayer(this.owner,e.getKey());
+                }
+            }
+        }
         Item item = new Item(Main.WereWolfItem);
         this.owner.getInventory().setHotbarSlotIndex(0,0);
         this.owner.getInventory().setItem(0,item);

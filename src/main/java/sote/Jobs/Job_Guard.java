@@ -1,5 +1,7 @@
 package sote.Jobs;
 
+import java.util.Map;
+
 import cn.nukkit.Player;
 import cn.nukkit.item.Item;
 import sote.Main;
@@ -12,6 +14,11 @@ public class Job_Guard extends Job{
 
     @Override
     public void Night(){
+        for(Map.Entry<Player,Boolean> e : Main.isLife.entrySet()){
+            if(!(e.getKey().equals(this.owner))){
+                Main.switchNPC(this.owner,e.getKey());
+            }
+        }
         Item item = new Item(Main.GuardItem);
         this.owner.getInventory().setHotbarSlotIndex(0,0);
         this.owner.getInventory().setItem(0,item);
@@ -53,7 +60,7 @@ public class Job_Guard extends Job{
 
     @Override
     public String getName(){
-        return "霊媒師";
+        return "騎士";
     }
 
 }

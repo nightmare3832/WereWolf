@@ -1,6 +1,9 @@
 package sote.Jobs;
 
+import java.util.Map;
+
 import cn.nukkit.Player;
+import sote.Main;
 
 public class Job_Couple extends Job{
 
@@ -10,6 +13,15 @@ public class Job_Couple extends Job{
 
     @Override
     public void Night(){
+        for(Map.Entry<Player,Boolean> e : Main.isLife.entrySet()){
+            if(!(e.getKey().equals(this.owner))){
+                if(Main.jobAfter.get(e.getKey()).getNumber() != 6){
+                    Main.switchNPC(this.owner,e.getKey());
+                }else{
+                    Main.switchPlayer(this.owner,e.getKey());
+                }
+            }
+        }
     }
 
     @Override
@@ -28,7 +40,7 @@ public class Job_Couple extends Job{
 
     @Override
     public int getNumber(){
-        return 0;
+        return 6;
     }
 
     @Override

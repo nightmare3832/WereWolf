@@ -13,15 +13,23 @@ import java.util.UUID;
 import cn.nukkit.Player;
 import cn.nukkit.Server;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.EntityHuman;
+import cn.nukkit.entity.data.EntityMetadata;
+import cn.nukkit.entity.data.IntPositionEntityData;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.entity.EntityDamageByEntityEvent;
-import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.player.PlayerChatEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
+import cn.nukkit.event.server.DataPacketReceiveEvent;
 import cn.nukkit.level.Location;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.AddPlayerPacket;
+import cn.nukkit.network.protocol.DataPacket;
+import cn.nukkit.network.protocol.InteractPacket;
+import cn.nukkit.network.protocol.MovePlayerPacket;
+import cn.nukkit.network.protocol.PlayerListPacket;
+import cn.nukkit.network.protocol.RemoveEntityPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
@@ -42,7 +50,7 @@ public class Main extends PluginBase implements Listener{
     public void onEnable(){
         registerCommands();
         getServer().getPluginManager().registerEvents(this, this);
-        Center = new Vector3(128,5,128);
+        Center = new Vector3(128,4,128);
         super.onEnable();
     }
 
@@ -89,6 +97,79 @@ public class Main extends PluginBase implements Listener{
     }
 
     @EventHandler
+    public static void onPacket(DataPacketReceiveEvent event){
+        DataPacket pk = event.getPacket();
+        if(pk instanceof InteractPacket){
+            InteractPacket packet = (InteractPacket) pk;
+            Long eid = packet.target;
+            Player player = null;
+            for(Map.Entry<Player,Long> e : EntityId.entrySet()){
+                if(e.getValue().equals(eid)) player = e.getKey();
+            }
+            if(player == null) return;
+            if(player instanceof Player){
+                Player damager = event.getPlayer();
+                if(jobAfter.containsKey(damager) && jobAfter.containsKey(player)){
+                    if(TimeType == 30){
+                        if(isLife.get(damager)){
+                            if(isLife.get(player)){
+                                Vote(damager,player);
+                            }
+                        }
+                    }
+                    if(TimeType == 31){
+                        if(isLife.get(damager)){
+                            if(isLife.get(player)){
+                                DecisiveVote(damager,player);
+                            }
+                        }
+                    }
+                    if(TimeType == 10 || TimeType == 11 || TimeType == 12){
+                        if(isLife.get(damager)){
+                            if(isLife.get(player)){
+                                if(jobAfter.get(damager).getNumber() == 1){
+                                    if(jobAfter.get(player).getNumber() != 1){
+                                        if(damager.getInventory().getItemInHand().getId() == WereWolfItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                            for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                                                if(e.getValue()){
+                                                    if(jobAfter.get(e.getKey()).getNumber() == 1){
+                                                        e.getKey().sendMessage(player.getName()+"を選択しました");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }else if(jobAfter.get(damager).getNumber() == 2){
+                                    if(!jobAfter.get(damager).result.containsKey(player)){
+                                        if(damager.getInventory().getItemInHand().getId() == DivinerItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                        }
+                                    }
+                                }else if(jobAfter.get(damager).getNumber() == 4){
+                                    //if(!jobAfter.get(damager).result.containsKey(player)){
+                                        if(damager.getInventory().getItemInHand().getId() == GuardItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                        }
+                                    //}
+                                }
+                            }else{
+                                if(jobAfter.get(damager).getNumber() == 3){
+                                    if(!jobAfter.get(damager).result.containsKey(player)){
+                                        if(damager.getInventory().getItemInHand().getId() == PsychicItem){
+                                            jobAfter.get(damager).setTarget(player);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /*@EventHandler
     public static void onAttack(EntityDamageEvent event){
         Entity entity = event.getEntity();
         event.setCancelled();
@@ -150,7 +231,7 @@ public class Main extends PluginBase implements Listener{
                 }
             }
         }
-    }
+    }*/
 
     public static Boolean Join(Player player){
         if(TimeType == 0){
@@ -188,6 +269,7 @@ public class Main extends PluginBase implements Listener{
             jobAfter.put(e.getKey(),job);
             jobBefore.put(e.getKey(),job);
             isVoted.put(e.getKey(),false);
+            EntityId.put(e.getKey(),Entity.entityCount++);
             e.getKey().sendMessage(jobAfter.get(e.getKey()).getName());
             count++;
         }
@@ -230,9 +312,10 @@ public class Main extends PluginBase implements Listener{
             if(e.getValue()){
                 jobAfter.get(e.getKey()).Night();
             }
-            e.getKey().sendMessage("恐ろしい夜");
+            e.getKey().sendMessage("恐ろしい夜がやってきました\nこれより各プレイヤーは夜のアクションを完了してください");
         }
-        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackNight(),120);
+        tpCenter();
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackNight(),600);
     }
 
     public static void finishNight(){
@@ -279,9 +362,14 @@ public class Main extends PluginBase implements Listener{
         checkMember();
         if(TimeType == 0) return;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
-            if(e.getKey() instanceof Player) e.getKey().sendMessage("朝");
+            for(Map.Entry<Player,Boolean> ee : Main.isLife.entrySet()){
+                if(!(e.getKey().equals(ee.getKey()))){
+                    Main.switchPlayer(e.getKey(),ee.getKey());
+                }
+            }
+            e.getKey().sendMessage("朝がやってきました\nこれより話し合いを始めて今夜処刑する人を一人選んでください");
         }
-        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackMeeting(),60);
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackMeeting(),600);
     }
 
     public static void finishMeeting(){
@@ -295,9 +383,15 @@ public class Main extends PluginBase implements Listener{
                 VoteCount.put(e.getKey(),0);
                 isVoted.put(e.getKey(),false);
             }
-            e.getKey().sendMessage("投票開始");
+            for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
+                if(!(e.getKey().equals(ee.getKey()))){
+                    switchNPC(e.getKey(),ee.getKey());
+                }
+            }
+            e.getKey().sendMessage("話し合いの時間が終了しました\nこれより処刑したい人物を殴って選択してください");
         }
-        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackVote(),120);
+        tpCenter();
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackVote(),600);
     }
 
     public static void Vote(Player player,Player target){
@@ -305,7 +399,7 @@ public class Main extends PluginBase implements Listener{
         int vote = 1;
         VoteCount.put(target,VoteCount.get(target) + vote);
         isVoted.put(player, true);
-        player.sendMessage(target.getName()+"に投票");
+        player.sendMessage(target.getName()+"に投票しました");
     }
 
     public static void finishVote(){
@@ -340,14 +434,19 @@ public class Main extends PluginBase implements Listener{
     public static void startDecisiveVote(HashMap<Player,Integer> entry){
         TimeType = 31;
         DecisiveEntry = entry;
+        String entries = "";
+        for(Map.Entry<Player,Integer> e : entry.entrySet()){
+            if(entries.equals("")) entries += e.getKey().getName();
+            else entries += ","+e.getKey().getName();
+        }
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
             if(e.getValue()){
                 VoteCount.put(e.getKey(),0);
                 isVoted.put(e.getKey(),false);
             }
-            e.getKey().sendMessage("決選投票");
+            e.getKey().sendMessage(entries+"の票が同数のため決選投票を行います\nこれより処刑したい人物を殴って選択してください");
         }
-        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackDecisiveVote(),120);
+        Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackDecisiveVote(),600);
     }
 
     public static void DecisiveVote(Player player,Player target){
@@ -414,7 +513,7 @@ public class Main extends PluginBase implements Listener{
     public static void Death(HashMap<Player,Integer> death){
         if(death.size() == 0){
             for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
-                ee.getKey().sendMessage("死亡なし");
+                ee.getKey().sendMessage("今夜の犠牲者はいませんでした");
             }
             return;
         }
@@ -430,6 +529,9 @@ public class Main extends PluginBase implements Listener{
                     break;
                     case 2:
                         ee.getKey().sendMessage(e.getKey().getName()+"が投票によって処刑されました");
+                    break;
+                    case 3:
+                        ee.getKey().sendMessage(e.getKey().getName()+"が無残な姿で発見されました");
                     break;
                     default:
                         ee.getKey().sendMessage(e.getKey().getName()+"が謎の死を遂げました");
@@ -563,9 +665,114 @@ public class Main extends PluginBase implements Listener{
         return (deg * Math.PI / 180.0);
     }
 
+    public static void switchNPC(Player player,Player target){
+        if(isLife.get(target)){
+            player.hidePlayer(target);
+            UUID uuid = UUID.randomUUID();
+            AddPlayerPacket pk = new AddPlayerPacket();
+            pk.entityRuntimeId = EntityId.get(target);
+            pk.entityUniqueId = EntityId.get(target);
+            pk.uuid = uuid;
+            pk.x = (float)pos.get(target).x;
+            pk.y = (float)pos.get(target).y;
+            pk.z = (float)pos.get(target).z;
+            pk.yaw = (float)pos.get(target).yaw;
+            pk.pitch = (float)pos.get(target).pitch;
+            pk.username = "";
+            int flags = 0;
+            flags |= 1 << Entity.DATA_FLAG_ALWAYS_SHOW_NAMETAG;
+            flags |= 1 << Entity.DATA_FLAG_CAN_SHOW_NAMETAG;
+            //flags |= 1 << Entity.DATA_FLAG_IMMOBILE;
+            pk.metadata = new EntityMetadata()
+                    .putLong(Entity.DATA_FLAGS,flags)
+                    .putString(Entity.DATA_NAMETAG, target.getNameTag())
+                    .putLong(Entity.DATA_LEAD_HOLDER_EID, (long)-1)
+                    .putByte(Entity.DATA_LEAD, 0);
+            player.dataPacket(pk);
+            PlayerListPacket pkk = new PlayerListPacket();
+            pkk.type = PlayerListPacket.TYPE_ADD;
+            pkk.entries = new PlayerListPacket.Entry[]{new PlayerListPacket.Entry(uuid, pk.entityRuntimeId, "",target.getSkin())};
+            player.dataPacket(pkk);
+            PlayerListPacket pkkk = new PlayerListPacket();
+            pkkk.type = PlayerListPacket.TYPE_REMOVE;
+            pkkk.entries = new PlayerListPacket.Entry[]{new PlayerListPacket.Entry(uuid)};
+            player.dataPacket(pkkk);
+        }else{
+            player.hidePlayer(target);
+            UUID uuid = UUID.randomUUID();
+            AddPlayerPacket pk = new AddPlayerPacket();
+            pk.entityRuntimeId = EntityId.get(target);
+            pk.entityUniqueId = EntityId.get(target);
+            pk.uuid = uuid;
+            pk.x = (float)pos.get(target).x;
+            pk.y = (float)pos.get(target).y;
+            pk.z = (float)pos.get(target).z;
+            pk.yaw = (float)pos.get(target).yaw;
+            pk.pitch = (float)pos.get(target).pitch;
+            pk.username = "";
+            int flags = 0;
+            flags |= 1 << Entity.DATA_FLAG_ALWAYS_SHOW_NAMETAG;
+            flags |= 1 << Entity.DATA_FLAG_CAN_SHOW_NAMETAG;
+            //flags |= 1 << Entity.DATA_FLAG_IMMOBILE;
+            int playerflags = 0;
+            playerflags ^= 1 << EntityHuman.DATA_PLAYER_FLAG_SLEEP;
+            pk.metadata = new EntityMetadata()
+                    .putLong(Entity.DATA_FLAGS,flags)
+                    .putString(Entity.DATA_NAMETAG, target.getNameTag())
+                    .putLong(Entity.DATA_LEAD_HOLDER_EID, (long)-1)
+                    .putByte(Entity.DATA_LEAD, 0)
+                    .putByte(EntityHuman.DATA_PLAYER_FLAGS,playerflags)
+                    .put(new IntPositionEntityData(EntityHuman.DATA_PLAYER_BED_POSITION,(int)pk.x,(int)pk.y,(int)pk.z));
+            player.dataPacket(pk);
+            PlayerListPacket pkk = new PlayerListPacket();
+            pkk.type = PlayerListPacket.TYPE_ADD;
+            pkk.entries = new PlayerListPacket.Entry[]{new PlayerListPacket.Entry(uuid, pk.entityRuntimeId, "",target.getSkin())};
+            player.dataPacket(pkk);
+            PlayerListPacket pkkk = new PlayerListPacket();
+            pkkk.type = PlayerListPacket.TYPE_REMOVE;
+            pkkk.entries = new PlayerListPacket.Entry[]{new PlayerListPacket.Entry(uuid)};
+            player.dataPacket(pkkk);
+            MovePlayerPacket pkkkk = new MovePlayerPacket();
+            pkkkk.eid = pk.entityRuntimeId;
+            pkkkk.x = (float)pk.x;
+            pkkkk.y = (float)(pk.y+0.5);
+            pkkkk.z = (float)pk.z;
+            pkkkk.yaw = 0;
+            pkkkk.pitch = 0;
+            pkkkk.mode = MovePlayerPacket.MODE_NORMAL;
+        }
+    }
+
+    public static void switchPlayer(Player player,Player target){
+        if(isLife.get(target)){
+            player.showPlayer(target);
+            RemoveEntityPacket pk = new RemoveEntityPacket();
+            pk.eid = EntityId.get(target);
+            player.dataPacket(pk);
+        }else{
+            switchNPC(player,target);
+        }
+    }
+
+    public static void resetPlayer(Player player,Player target){
+        player.showPlayer(target);
+        RemoveEntityPacket pk = new RemoveEntityPacket();
+        pk.eid = EntityId.get(target);
+        player.dataPacket(pk);
+    }
+
     public static void reset(){
+        for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+            for(Map.Entry<Player,Boolean> ee : Main.isLife.entrySet()){
+                if(!(e.getKey().equals(ee.getKey()))){
+                    Main.resetPlayer(e.getKey(),ee.getKey());
+                }
+            }
+        }
         jobAfter = new HashMap<Player,Job>();
         jobBefore = new HashMap<Player,Job>();
+        pos = new HashMap<Player,Location>();
+        EntityId = new HashMap<Player,Long>();
         SuddenDeath = new HashMap<Player,Integer>();
         isLife = new HashMap<Player,Boolean>();
         isVoted = new HashMap<Player,Boolean>();
@@ -614,6 +821,7 @@ public class Main extends PluginBase implements Listener{
     // 75 Hoodlum (ならず者)               76 Stalker (ストーカー)              77 Copier (コピー)
     // 78 Doppleganger (ドッペルゲンガー)
     public static HashMap<Player,Location> pos = new HashMap<Player,Location>();
+    public static HashMap<Player,Long> EntityId = new HashMap<Player,Long>();
     public static HashMap<Player,Boolean> isLife = new HashMap<Player,Boolean>();
     public static HashMap<Player,Integer> SuddenDeath = new HashMap<Player,Integer>();
     public static HashMap<Player,Boolean> isVoted = new HashMap<Player,Boolean>();
