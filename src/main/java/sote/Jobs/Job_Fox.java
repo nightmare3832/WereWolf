@@ -22,7 +22,6 @@ public class Job_Fox extends Job{
 
     @Override
     public void setTarget(Player player){
-        WereWolfTarget = player;
     }
 
     @Override
