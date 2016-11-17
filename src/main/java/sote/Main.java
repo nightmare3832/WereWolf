@@ -777,6 +777,7 @@ public class Main extends PluginBase implements Listener{
     public static final int DivinerItem = 340;
     public static final int PsychicItem = 340;
     public static final int GuardItem = 272;
+    public static Boolean ContinuationGuard = false;
     public static Vector3 Center;
     public static String jobs = "0,0,1";
     public static HashMap<Integer,Integer[]> defaultCast = new HashMap<Integer,Integer[]>();

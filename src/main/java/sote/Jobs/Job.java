@@ -71,6 +71,7 @@ public abstract class Job{
     public static Player WereWolfTarget = null;
     public Player DivinerTarget = null;
     public Player GuardTarget = null;
+    public Player BeforeGuardTarget = null;
     public Boolean used = false;
     public HashMap<Player,String> result = new HashMap<Player,String>();
     public Player owner = null;

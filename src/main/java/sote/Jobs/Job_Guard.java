@@ -28,7 +28,9 @@ public class Job_Guard extends Job{
     @Override
     public void setTarget(Player player){
         if(this.used) return;
+        if(Main.ContinuationGuard && this.BeforeGuardTarget.equals(player)) return;
         this.GuardTarget = player;
+        this.BeforeGuardTarget = player;
         this.owner.sendMessage(player.getName()+"を選択しました");
         this.used = true;
     }
