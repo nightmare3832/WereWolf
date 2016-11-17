@@ -38,6 +38,7 @@ import sote.Jobs.Job_Diviner;
 import sote.Jobs.Job_Fanatic;
 import sote.Jobs.Job_Fox;
 import sote.Jobs.Job_Guard;
+import sote.Jobs.Job_Immoral;
 import sote.Jobs.Job_Madman;
 import sote.Jobs.Job_Psychic;
 import sote.Jobs.Job_Villager;
@@ -305,6 +306,8 @@ public class Main extends PluginBase implements Listener{
                 return new Job_Fanatic(player);
             case 62:
                 return new Job_Fox(player);
+            case 64:
+                return new Job_Immoral(player);
             default:
                 return new Job_Villager(player);
         }
@@ -820,7 +823,7 @@ public class Main extends PluginBase implements Listener{
     // 54 WolfBoy (狼少年)                 55 Sorcerer (妖術師)                 56 WhisperingMad (囁き狂人)
     // 57 ObstructiveMad (邪魔狂人)        58 Spy (スパイ)                      59 Spy2 (スパイⅡ)
     // 60 PsychoKiller (サイコキラー)      61 Bomber (爆弾魔)                   62 *Fox (妖狐)
-    // 63 TinyFox (子狐)                   64 Immoral (背徳者)                  65 Defiler (冒涜者)
+    // 63 TinyFox (子狐)                   64 *Immoral (背徳者)                 65 Defiler (冒涜者)
     // 66 Devil (悪魔くん)                 67 Vampire (ヴァンパイア)            68 Cupid (キューピッド)
     // 69 Lover (求愛者)                   70 BadLady (悪女)                    71 Pathisie (パティシエール)
     // 72 CultLeader (カルトリーダー)      73 Tanner (皮なめし職人)             74 Bat (こうもり)
