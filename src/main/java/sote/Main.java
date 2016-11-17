@@ -22,6 +22,7 @@ import cn.nukkit.event.player.PlayerChatEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.event.server.DataPacketReceiveEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.level.Location;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.AddPlayerPacket;
@@ -33,6 +34,7 @@ import cn.nukkit.network.protocol.RemoveEntityPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.Task;
 import sote.Jobs.Job;
+import sote.Jobs.Job_Baker;
 import sote.Jobs.Job_Couple;
 import sote.Jobs.Job_Diviner;
 import sote.Jobs.Job_Fanatic;
@@ -304,6 +306,8 @@ public class Main extends PluginBase implements Listener{
                 return new Job_Couple(player);
             case 7:
                 return new Job_Fanatic(player);
+            case 42:
+                return new Job_Baker(player);
             case 62:
                 return new Job_Fox(player);
             case 64:
@@ -370,6 +374,7 @@ public class Main extends PluginBase implements Listener{
         else if(MeetingCount == 2) TimeType = 21;
         checkMember();
         if(TimeType == 0) return;
+        Boolean baker = false;
         for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
             for(Map.Entry<Player,Boolean> ee : Main.isLife.entrySet()){
                 if(!(e.getKey().equals(ee.getKey()))){
@@ -377,6 +382,18 @@ public class Main extends PluginBase implements Listener{
                 }
             }
             e.getKey().sendMessage("朝がやってきました\nこれより話し合いを始めて今夜処刑する人を一人選んでください");
+            if(jobAfter.get(e.getKey()).getNumber() == 42){
+                baker = true;
+            }
+        }
+        if(baker){
+            for(Map.Entry<Player,Boolean> e : isLife.entrySet()){
+                e.getKey().sendMessage("パン屋によってパンが配られました");
+                Item item = new Item(Item.BREAD);
+                e.getKey().getInventory().setHotbarSlotIndex(0,0);
+                e.getKey().getInventory().setItem(0,item);
+                e.getKey().getInventory().sendContents(e.getKey());
+            }
         }
         Server.getInstance().getScheduler().scheduleDelayedTask(new CallbackMeeting(),600);
     }
@@ -526,6 +543,7 @@ public class Main extends PluginBase implements Listener{
             }
             return;
         }
+        Boolean baker = false;
         for(Map.Entry<Player,Integer> e : death.entrySet()){
             isLife.put(e.getKey(),false);
             for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
@@ -546,7 +564,13 @@ public class Main extends PluginBase implements Listener{
                         ee.getKey().sendMessage(e.getKey().getName()+"が謎の死を遂げました");
                     break;
                 }
+                if(jobAfter.get(e.getKey()).getNumber() == 42){
+                    baker = true;
+                }
             }
+        }
+        for(Map.Entry<Player,Boolean> ee : isLife.entrySet()){
+            ee.getKey().sendMessage("今からはもうおいしいパンを食べることができません");
         }
     }
 
@@ -816,7 +840,7 @@ public class Main extends PluginBase implements Listener{
     // 33 Counselor (カウンセラー)         34 Miko (巫女)                       35 RedHood (赤ずきん)
     // 36 WanderingGuard (風来狩人)        37 TroubleMaker (トラブルメーカー)   38 FrankensteinsMonster (フランケンシュタインの怪物)
     // 39 King (王様)                      40 Phantom (怪盗)                    41 DrawGirl (看板娘)
-    // 42 Baker (パン屋)                   43 WolfDiviner (人狼占い)            44 BigWolf (大狼)
+    // 42 *Baker (パン屋)                  43 WolfDiviner (人狼占い)            44 BigWolf (大狼)
     // 45 WolfCub (狼の子)                 46 MedWolf (狂人狼)                  47 LoneWolf (一匹狼)
     // 48 GreedyWolf (欲張りな狼)          49 FascinatingWolf (誘惑する女狼)    50 SolitudeWolf (孤独な狼)
     // 51 ToughWolf (一途な狼)             52 ThreateningWolf (威嚇する狼)      53 CautiousWolf (慎重な狼)
