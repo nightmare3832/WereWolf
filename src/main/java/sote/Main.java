@@ -36,6 +36,7 @@ import sote.Jobs.Job;
 import sote.Jobs.Job_Couple;
 import sote.Jobs.Job_Diviner;
 import sote.Jobs.Job_Fanatic;
+import sote.Jobs.Job_Fox;
 import sote.Jobs.Job_Guard;
 import sote.Jobs.Job_Madman;
 import sote.Jobs.Job_Psychic;
@@ -302,6 +303,8 @@ public class Main extends PluginBase implements Listener{
                 return new Job_Couple(player);
             case 7:
                 return new Job_Fanatic(player);
+            case 62:
+                return new Job_Fox(player);
             default:
                 return new Job_Villager(player);
         }
@@ -798,7 +801,7 @@ public class Main extends PluginBase implements Listener{
     public static HashMap<Player,Job> jobBefore = new HashMap<Player,Job>();
     // 0 *Villager (村人)                   1 *WereWolf (人狼)                   2 *Diviner (予言者)
     // 3 *Psychic (霊媒師)                  4 *Guard (騎士)                      5 *Madman (狂人)
-    // 6 *Couple (共有者)                   7 Fanatic (狂信者)                   8 Poisoner (埋毒者)
+    // 6 *Couple (共有者)                   7 *Fanatic (狂信者)                  8 Poisoner (埋毒者)
     // 9 Cat (猫又)                        10 ToughGuy (タフガイ)               11 Dog (犬)
     // 12 Noble (貴族)                     13 Slave (奴隷)                      14 Magician (魔術師)
     // 15 Fugitive (逃亡者)                16 Merchant (商人)                   17 QueenSpectator (女王観戦者)
@@ -816,7 +819,7 @@ public class Main extends PluginBase implements Listener{
     // 51 ToughWolf (一途な狼)             52 ThreateningWolf (威嚇する狼)      53 CautiousWolf (慎重な狼)
     // 54 WolfBoy (狼少年)                 55 Sorcerer (妖術師)                 56 WhisperingMad (囁き狂人)
     // 57 ObstructiveMad (邪魔狂人)        58 Spy (スパイ)                      59 Spy2 (スパイⅡ)
-    // 60 PsychoKiller (サイコキラー)      61 Bomber (爆弾魔)                   62 Fox (妖狐)
+    // 60 PsychoKiller (サイコキラー)      61 Bomber (爆弾魔)                   62 *Fox (妖狐)
     // 63 TinyFox (子狐)                   64 Immoral (背徳者)                  65 Defiler (冒涜者)
     // 66 Devil (悪魔くん)                 67 Vampire (ヴァンパイア)            68 Cupid (キューピッド)
     // 69 Lover (求愛者)                   70 BadLady (悪女)                    71 Pathisie (パティシエール)
